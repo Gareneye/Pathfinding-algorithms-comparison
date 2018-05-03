@@ -3,6 +3,9 @@ import math
 import random
 import sys
 
+import astar
+import bfs
+
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -11,11 +14,7 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 TRANS = (1, 2, 3)
-
-# CONSTANTS:
-WIDTH = 700
-HEIGHT = 700
-MARK_SIZE = 50
+GREY = (100, 100, 100)
 
 # GLOBAL VARIABLES:
 row = 0
@@ -30,49 +29,65 @@ seeker_start_y = 0
 goal_x = board_width - 1
 goal_y = board_height - 1
 
+# CONSTANTS:
+RECT_SIZE = 50
+RECT_PADDING = 5
+WIDTH = RECT_SIZE * board_width + board_width * RECT_PADDING + RECT_PADDING
+HEIGHT = RECT_SIZE * board_height + board_height * RECT_PADDING + RECT_PADDING
 
 class Game:
 
     def __init__(self):
-
-        self.game_board = [[0 for x in range(board_width)] for y in range(board_height)]
-
-        test = [(x, y) for x in range(board_width) for y in range(board_height)]
-        print(test)
-
-        for i in range(board_width):
-            for j in range(board_height):
-                self.game_board[i][j] = '-'
-
-        self.game_board[seeker_start_x][seeker_start_y] = 's'
-        self.game_board[goal_x][goal_y] = 'G'
+        self.obsticles = []
+        self.path = []
 
     def evaluate_click(self, mouse_pos):
-
         row, column = get_clicked_row(mouse_pos), get_clicked_column(mouse_pos)
         self.toggle_obsticle(row, column)
 
     def draw(self):
+        # draw board
+        for x in range(board_width):
+            for y in range(board_height):
+                pygame.draw.rect(screen, GREY, self.getPixelCoords(x, y) + (RECT_SIZE, RECT_SIZE), 0)
 
-        for i in range(board_width + 1):
-            pygame.draw.line(screen, WHITE, [i * WIDTH / board_width, 0], [i * WIDTH / board_width, HEIGHT], 5)
-        for i in range(board_height + 1):
-            pygame.draw.line(screen, WHITE, [0, i * HEIGHT / board_height], [WIDTH, i * HEIGHT / board_height], 5)
-        font = pygame.font.SysFont('Calibri', MARK_SIZE, False, False)
-        for r in range(len(self.game_board)):
-            for c in range(len(self.game_board[r])):
-                mark = self.game_board[r][c]
-                if mark != '-':
-                    mark_text = font.render(self.game_board[r][c], True, RED)
-                    x = WIDTH / board_width * c + WIDTH / (board_width * 2)
-                    y = HEIGHT / board_height * r + HEIGHT / (board_height * 2)
-                    screen.blit(mark_text, [x - mark_text.get_width() / 2, y - mark_text.get_height() / 2])
+        # draw path
+        for node in self.path:
+            pygame.draw.rect(screen, WHITE, self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
+
+        # draw start and goal
+        pygame.draw.rect(screen, YELLOW, self.getPixelCoords(seeker_start_x, seeker_start_y) + (RECT_SIZE, RECT_SIZE), 0)
+        pygame.draw.rect(screen, GREEN, self.getPixelCoords(goal_x, goal_y) + (RECT_SIZE, RECT_SIZE), 0)
+
+        # draw obsticles
+        for node in self.obsticles:
+            pygame.draw.rect(screen, BLACK, self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
+
+
+    def getPixelCoords(self, x, y):
+        return (
+            x*RECT_SIZE+x*RECT_PADDING+RECT_PADDING,
+            y*RECT_SIZE+y*RECT_PADDING+RECT_PADDING
+        )
 
     def toggle_obsticle(self, row, column):
-        if (self.game_board[row][column] == 'o'):
-            self.game_board[row][column] = '-'
+        node = (column, row)
+        if node in self.obsticles:
+            self.obsticles.remove(node)
         else:
-            self.game_board[row][column] = 'o'
+            self.obsticles.append(node)
+
+        self.find_path()
+
+    def find_path(self):
+        path = bfs.resolve(
+            start_node=(seeker_start_x, seeker_start_y),
+            goal_node=(goal_x, goal_y),
+            inactive=self.obsticles,
+            width=board_width,
+            height=board_height)
+
+        self.path = path
 
 
 # Helper functions:
