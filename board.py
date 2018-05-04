@@ -5,6 +5,7 @@ import sys
 
 import astar
 import bfs
+import dfs
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -31,7 +32,7 @@ goal_y = board_height - 1
 
 # CONSTANTS:
 RECT_SIZE = 50
-RECT_PADDING = 5
+RECT_PADDING = 1
 WIDTH = RECT_SIZE * board_width + board_width * RECT_PADDING + RECT_PADDING
 HEIGHT = RECT_SIZE * board_height + board_height * RECT_PADDING + RECT_PADDING
 
@@ -53,11 +54,24 @@ class Game:
 
         # draw path
         for node in self.path:
-            pygame.draw.rect(screen, WHITE, self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
+            pygame.draw.rect(screen, (160, 160, 160), self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
 
         # draw start and goal
         pygame.draw.rect(screen, YELLOW, self.getPixelCoords(seeker_start_x, seeker_start_y) + (RECT_SIZE, RECT_SIZE), 0)
         pygame.draw.rect(screen, GREEN, self.getPixelCoords(goal_x, goal_y) + (RECT_SIZE, RECT_SIZE), 0)
+
+        # draw arrows
+        lastNode = None
+        for node in self.path:
+            if lastNode:
+                start = self.getPixelCoords(lastNode[0], lastNode[1])
+                start = (start[0] + RECT_SIZE/2, start[1] + RECT_SIZE/2)
+                end = self.getPixelCoords(node[0], node[1])
+                end = (end[0] + RECT_SIZE/2, end[1] + RECT_SIZE/2)
+                pygame.draw.line(screen, WHITE, start, end, 5)
+
+            lastNode = node
+
 
         # draw obsticles
         for node in self.obsticles:
@@ -80,7 +94,7 @@ class Game:
         self.find_path()
 
     def find_path(self):
-        path = bfs.resolve(
+        path = dfs.resolve(
             start_node=(seeker_start_x, seeker_start_y),
             goal_node=(goal_x, goal_y),
             inactive=self.obsticles,
