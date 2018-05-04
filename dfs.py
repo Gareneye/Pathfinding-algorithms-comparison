@@ -27,18 +27,4 @@ def resolve(start_node=(0,0), goal_node=(4,4), inactive=[], width=5, height=5):
         if V[node]['color'] is "white":
            DFSVisit(V, Adj, time, node)
 
-    #shortest path
-    def findShortestPath(V, s, v):
-        if s is v:
-            return [s]
-
-        if not V[v]['pi']:
-            return []
-
-        list = findShortestPath(V, s, V[v]['pi'])
-        list.append(v)
-
-        return list
-
-
-    return findShortestPath(V, start_node, goal_node)
+    return utility.findShortestPath(V, start_node, goal_node)

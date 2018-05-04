@@ -6,6 +6,7 @@ import sys
 import astar
 import bfs
 import dfs
+import dijstra
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -94,7 +95,7 @@ class Game:
         self.find_path()
 
     def find_path(self):
-        path = dfs.resolve(
+        path = dijstra.resolve(
             start_node=(seeker_start_x, seeker_start_y),
             goal_node=(goal_x, goal_y),
             inactive=self.obsticles,
