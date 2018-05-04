@@ -28,4 +28,14 @@ def resolve(start_node=(0,0), goal_node=(4,4), inactive=[], width=5, height=5):
                 Q.append(v)
         V[u]['color'] = "black"
 
-    return utility.findShortestPath(V, start_node, goal_node)
+        if u == goal_node:
+            break
+
+    # Presentation
+    presentation = {}
+    for v in V:
+        if V[v]['color'] is not "white":
+            value = 200
+            presentation[v] = (value, value, value)
+
+    return presentation, utility.findShortestPath(V, start_node, goal_node)

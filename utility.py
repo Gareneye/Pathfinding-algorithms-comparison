@@ -1,3 +1,5 @@
+import math
+
 def createG(inactive=[], width=5, height=5):
     Adj = {}
     V = {}
@@ -34,7 +36,7 @@ def weight(v1, v2):
     return abs(v1[0] - v2[0]) + abs(v1[1] - v2[1])
 
 def findShortestPath(V, s, v):
-    if s is v:
+    if s == v:
         return [s]
 
     if not V[v]['pi']:

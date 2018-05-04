@@ -7,6 +7,7 @@ import astar
 import bfs
 import dfs
 import dijstra
+import astar
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -22,8 +23,8 @@ GREY = (100, 100, 100)
 row = 0
 column = 0
 
-board_height = 10
-board_width = 10
+board_height = 20
+board_width = 20
 
 seeker_start_x = 0
 seeker_start_y = 0
@@ -32,7 +33,7 @@ goal_x = board_width - 1
 goal_y = board_height - 1
 
 # CONSTANTS:
-RECT_SIZE = 50
+RECT_SIZE = 30
 RECT_PADDING = 1
 WIDTH = RECT_SIZE * board_width + board_width * RECT_PADDING + RECT_PADDING
 HEIGHT = RECT_SIZE * board_height + board_height * RECT_PADDING + RECT_PADDING
@@ -42,6 +43,7 @@ class Game:
     def __init__(self):
         self.obsticles = []
         self.path = []
+        self.presentation = []
 
     def evaluate_click(self, mouse_pos):
         row, column = get_clicked_row(mouse_pos), get_clicked_column(mouse_pos)
@@ -53,9 +55,12 @@ class Game:
             for y in range(board_height):
                 pygame.draw.rect(screen, GREY, self.getPixelCoords(x, y) + (RECT_SIZE, RECT_SIZE), 0)
 
+        for node in self.presentation:
+            pygame.draw.rect(screen, self.presentation[node], self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
+
         # draw path
-        for node in self.path:
-            pygame.draw.rect(screen, (160, 160, 160), self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
+        #for node in self.path:
+        #    pygame.draw.rect(screen, (160, 160, 160), self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
 
         # draw start and goal
         pygame.draw.rect(screen, YELLOW, self.getPixelCoords(seeker_start_x, seeker_start_y) + (RECT_SIZE, RECT_SIZE), 0)
@@ -95,14 +100,13 @@ class Game:
         self.find_path()
 
     def find_path(self):
-        path = dijstra.resolve(
+        self.presentation, self.path = astar.resolve(
             start_node=(seeker_start_x, seeker_start_y),
             goal_node=(goal_x, goal_y),
             inactive=self.obsticles,
             width=board_width,
-            height=board_height)
-
-        self.path = path
+            height=board_height
+        )
 
 
 # Helper functions:

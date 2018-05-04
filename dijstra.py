@@ -28,7 +28,8 @@ def resolve(start_node=(0,0), goal_node=(4,4), inactive=[], width=5, height=5):
     # Funkcja wagi jest w utility
     # Relaksacja dla wagi 1
     def relax(V, u, v):
-        w = utility.weight(u, v)
+        #w = utility.weight(u, v)
+        w = 1
 
         if V[v]['d'] > V[u]['d'] + w:
             V[v]['d'] = V[u]['d'] + w
@@ -43,6 +44,15 @@ def resolve(start_node=(0,0), goal_node=(4,4), inactive=[], width=5, height=5):
         for v in Adj[u]:
             relax(V, u, v)
 
-    return utility.findShortestPath(V, start_node, goal_node)
+        if u == goal_node:
+            break
+
+    # Presentation
+    presentation = {}
+    for v in S:
+        value = 200
+        presentation[v] = (value, value, value)
+
+    return presentation, utility.findShortestPath(V, start_node, goal_node)
 
 resolve()
