@@ -8,6 +8,8 @@ import bfs
 import dfs
 import dijstra
 import astar
+from itertools import cycle
+
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -32,6 +34,10 @@ seeker_start_y = 0
 goal_x = board_width - 1
 goal_y = board_height - 1
 
+algorithms=[("astar",astar),("bfs",bfs),("dfs",dfs),("dijkstra",dijstra)]
+
+algorithms_pool = cycle(algorithms)
+
 # CONSTANTS:
 RECT_SIZE = 30
 RECT_PADDING = 1
@@ -44,6 +50,10 @@ class Game:
         self.obsticles = []
         self.path = []
         self.presentation = []
+        self.font = pygame.font.SysFont("monospace", 15)
+
+        self.next_algorithm()
+
 
     def evaluate_click(self, mouse_pos):
         row, column = get_clicked_row(mouse_pos), get_clicked_column(mouse_pos)
@@ -83,6 +93,8 @@ class Game:
         for node in self.obsticles:
             pygame.draw.rect(screen, BLACK, self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
 
+        #draw text with algorithm name
+        screen.blit(self.label, (10,HEIGHT-25))
 
     def getPixelCoords(self, x, y):
         return (
@@ -100,13 +112,21 @@ class Game:
         self.find_path()
 
     def find_path(self):
-        self.presentation, self.path = astar.resolve(
+        self.presentation, self.path = self.algorithm[1].resolve(
             start_node=(seeker_start_x, seeker_start_y),
             goal_node=(goal_x, goal_y),
             inactive=self.obsticles,
             width=board_width,
             height=board_height
         )
+
+    def next_algorithm(self):
+        self.algorithm = next(algorithms_pool)
+        self.label = self.font.render(self.algorithm[0]+" <press SPACE to change>", 1, (255,255,0))
+        self.find_path()
+
+
+
 
 
 # Helper functions:
@@ -132,6 +152,7 @@ size = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(size)
 game = Game()
 
+
 # Loop until the user clicks the close button.
 done = False
 
@@ -146,6 +167,8 @@ while not done:
             done = True  # Flag that we are done so we exit this loop
         if event.type == pygame.KEYDOWN:
             entry = str(event.key)
+            if event.key==32:
+                game.next_algorithm()
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             game.evaluate_click(pygame.mouse.get_pos())
