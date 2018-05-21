@@ -28,11 +28,6 @@ column = 0
 board_height = 20
 board_width = 20
 
-seeker_start_x = 0
-seeker_start_y = 0
-
-goal_x = board_width - 1
-goal_y = board_height - 1
 
 algorithms=[("astar",astar),("bfs",bfs),("dfs",dfs),("dijkstra",dijstra)]
 
@@ -47,17 +42,49 @@ HEIGHT = RECT_SIZE * board_height + board_height * RECT_PADDING + RECT_PADDING
 class Game:
 
     def __init__(self):
+        
+        self.seeker_x = 0
+        self.seeker_y = 0
+
+        self.goal_x = board_width - 1
+        self.goal_y = board_height - 1
+
+
         self.obsticles = []
         self.path = []
         self.presentation = []
-        self.font = pygame.font.SysFont("monospace", 15)
+        self.font = pygame.font.SysFont("monospace", 25)
+        self.font.set_bold(True)
 
         self.next_algorithm()
+
+        self.moving_seeker = False
+        self.moving_goal = False
+
+
+
+        
+        
 
 
     def evaluate_click(self, mouse_pos):
         row, column = get_clicked_row(mouse_pos), get_clicked_column(mouse_pos)
-        self.toggle_obsticle(row, column)
+        if(self.moving_seeker == True):
+            self.seeker_x = column
+            self.seeker_y = row
+            self.find_path()
+            self.moving_seeker = False
+        elif(row==self.seeker_y and column ==self.seeker_x):
+            self.moving_seeker = True
+        elif(self.moving_goal == True):
+            self.goal_x = column
+            self.goal_y = row
+            self.find_path()
+            self.moving_goal = False
+        elif(row==self.goal_y and column ==self.goal_x):
+            self.moving_goal = True
+        else:
+            self.toggle_obsticle(row, column)
 
     def draw(self):
         # draw board
@@ -73,8 +100,11 @@ class Game:
         #    pygame.draw.rect(screen, (160, 160, 160), self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
 
         # draw start and goal
-        pygame.draw.rect(screen, YELLOW, self.getPixelCoords(seeker_start_x, seeker_start_y) + (RECT_SIZE, RECT_SIZE), 0)
-        pygame.draw.rect(screen, GREEN, self.getPixelCoords(goal_x, goal_y) + (RECT_SIZE, RECT_SIZE), 0)
+        if (self.moving_seeker == False):
+            pygame.draw.rect(screen, YELLOW, self.getPixelCoords(self.seeker_x, self.seeker_y) + (RECT_SIZE, RECT_SIZE), 0)
+        
+        if (self.moving_goal == False):
+            pygame.draw.rect(screen, GREEN, self.getPixelCoords(self.goal_x, self.goal_y) + (RECT_SIZE, RECT_SIZE), 0)
 
         # draw arrows
         lastNode = None
@@ -94,7 +124,7 @@ class Game:
             pygame.draw.rect(screen, BLACK, self.getPixelCoords(node[0], node[1]) + (RECT_SIZE, RECT_SIZE), 0)
 
         #draw text with algorithm name
-        screen.blit(self.label, (10,HEIGHT-25))
+        screen.blit(self.label, (10,HEIGHT-35))
 
     def getPixelCoords(self, x, y):
         return (
@@ -113,8 +143,8 @@ class Game:
 
     def find_path(self):
         self.presentation, self.path = self.algorithm[1].resolve(
-            start_node=(seeker_start_x, seeker_start_y),
-            goal_node=(goal_x, goal_y),
+            start_node=(self.seeker_x, self.seeker_y),
+            goal_node=(self.goal_x, self.goal_y),
             inactive=self.obsticles,
             width=board_width,
             height=board_height
@@ -122,7 +152,7 @@ class Game:
 
     def next_algorithm(self):
         self.algorithm = next(algorithms_pool)
-        self.label = self.font.render(self.algorithm[0]+" <press SPACE to change>", 1, (255,255,0))
+        self.label = self.font.render(self.algorithm[0]+" <press SPACE to change>", 1, RED)
         self.find_path()
 
 
