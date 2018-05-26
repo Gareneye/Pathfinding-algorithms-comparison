@@ -34,4 +34,28 @@ def resolve(start_node=(0,0), goal_node=(4,4), inactive=[], width=5, height=5):
             value = 200
             presentation[v] = (value, value, value)
 
-    return presentation, utility.findShortestPath(V, start_node, goal_node)
+    def __findPathDFS(graph, Adj, current, goal, visited):
+        if current == goal:
+            return [current]
+
+        if current in graph:
+            for neighbor in Adj[current]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    path = __findPathDFS(graph, Adj, neighbor, goal, visited)
+
+                    if path is not None:
+                        path.insert(0, current)
+                        return path
+        return None
+
+    def findPathDFS(V, Adj, start, goal):
+        if start not in V or goal not in V:
+            return []
+
+        visited = set()
+        visited.add(start)
+
+        return __findPathDFS(V, Adj, start, goal, visited)
+
+    return presentation, findPathDFS(V, Adj, start_node, goal_node)
